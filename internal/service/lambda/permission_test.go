@@ -829,7 +829,7 @@ func testAccPermissionConfig_withRawFunctionName(funcName, roleName string) stri
 resource "aws_lambda_permission" "with_raw_func_name" {
   statement_id  = "AllowExecutionWithRawFuncName"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "events.amazonaws.com"
 }
 
@@ -956,14 +956,14 @@ var testAccPermissionConfig_multiplePerms_tpl = `
 resource "aws_lambda_permission" "first" {
   statement_id  = "AllowExecutionFirst"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "events.amazonaws.com"
 }
 
 resource "aws_lambda_permission" "%s" {
   statement_id  = "%s"
   action        = "lambda:*"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "events.amazonaws.com"
 }
 %s
@@ -1008,7 +1008,7 @@ func testAccPermissionConfig_multiplePermsModified(funcName, roleName string) st
 resource "aws_lambda_permission" "third" {
   statement_id  = "AllowExecutionThird"
   action        = "lambda:*"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "events.amazonaws.com"
 }
 `, funcName, roleName)
@@ -1019,7 +1019,7 @@ func testAccPermissionConfig_withS3(bucketName, funcName, roleName string) strin
 resource "aws_lambda_permission" "with_s3" {
   statement_id  = "AllowExecutionFromS3"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.default.arn
 }
@@ -1064,7 +1064,7 @@ func testAccPermissionConfig_withSNS(topicName, funcName, roleName string) strin
 resource "aws_lambda_permission" "with_sns" {
   statement_id  = "AllowExecutionFromSNS"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = aws_sns_topic.default.arn
 }
@@ -1114,7 +1114,7 @@ func testAccPermissionConfig_withIAMRole(funcName, roleName string) string {
 resource "aws_lambda_permission" "iam_role" {
   statement_id  = "AllowExecutionFromIAMRole"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test.arn
+  function_name = aws_lambda_function.test.function_name
   principal     = aws_iam_role.test.arn
 }
 
