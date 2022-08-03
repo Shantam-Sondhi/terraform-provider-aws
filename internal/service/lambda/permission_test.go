@@ -348,7 +348,6 @@ func TestAccLambdaPermission_statementIDPrefix(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "principal", "events.amazonaws.com"),
 					create.TestCheckResourceAttrNameFromPrefix(resourceName, "statement_id", "AllowExecutionWithStatementIdPrefix-"),
 					resource.TestCheckResourceAttr(resourceName, "statement_id_prefix", "AllowExecutionWithStatementIdPrefix-"),
-
 				),
 			},
 			{
