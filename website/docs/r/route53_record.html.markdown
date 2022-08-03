@@ -1,5 +1,5 @@
 ---
-subcategory: "Route53"
+subcategory: "Route 53"
 layout: "aws"
 page_title: "AWS: aws_route53_record"
 description: |-
@@ -19,7 +19,7 @@ resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "www.example.com"
   type    = "A"
-  ttl     = "300"
+  ttl     = 300
   records = [aws_eip.lb.public_ip]
 }
 ```
@@ -32,7 +32,7 @@ resource "aws_route53_record" "www-dev" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "www"
   type    = "CNAME"
-  ttl     = "5"
+  ttl     = 5
 
   weighted_routing_policy {
     weight = 10
@@ -46,7 +46,7 @@ resource "aws_route53_record" "www-live" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "www"
   type    = "CNAME"
-  ttl     = "5"
+  ttl     = 5
 
   weighted_routing_policy {
     weight = 90
@@ -124,7 +124,7 @@ The following arguments are supported:
 * `type` - (Required) The record type. Valid values are `A`, `AAAA`, `CAA`, `CNAME`, `DS`, `MX`, `NAPTR`, `NS`, `PTR`, `SOA`, `SPF`, `SRV` and `TXT`.
 * `ttl` - (Required for non-alias records) The TTL of the record.
 * `records` - (Required for non-alias records) A string list of records. To specify a single record value longer than 255 characters such as a TXT record for DKIM, add `\"\"` inside the Terraform configuration string (e.g., `"first255characters\"\"morecharacters"`).
-* `set_identifier` - (Optional) Unique identifier to differentiate records with routing policies from one another. Required if using `failover`, `geolocation`, `latency`, or `weighted` routing policies documented below.
+* `set_identifier` - (Optional) Unique identifier to differentiate records with routing policies from one another. Required if using `failover`, `geolocation`, `latency`, `multivalue_answer`, or `weighted` routing policies documented below.
 * `health_check_id` - (Optional) The health check the record should be associated with.
 * `alias` - (Optional) An alias block. Conflicts with `ttl` & `records`.
   Alias record documented below.
@@ -167,7 +167,6 @@ In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name of the record.
 * `fqdn` - [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) built using the zone domain and `name`.
-
 
 ## Import
 

@@ -3,6 +3,7 @@ package elbv2
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
+	"github.com/hashicorp/terraform-provider-aws/internal/verify"
 )
 
 func DataSourceListener() *schema.Resource {
@@ -305,7 +307,7 @@ func dataSourceListenerRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("error reading Listener: %w", err)
+		return fmt.Errorf("reading Listener: %w", err)
 	}
 
 	if len(results) != 1 {
@@ -334,17 +336,22 @@ func dataSourceListenerRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err := d.Set("default_action", flattenLbListenerActions(d, listener.DefaultActions)); err != nil {
-		return fmt.Errorf("error setting default_action: %w", err)
+		return fmt.Errorf("setting default_action: %w", err)
 	}
 
 	tags, err := ListTags(conn, d.Id())
 
+	if verify.CheckISOErrorTagsUnsupported(conn.PartitionID, err) {
+		log.Printf("[WARN] Unable to list tags for ELBv2 Listener %s: %s", d.Id(), err)
+		return nil
+	}
+
 	if err != nil {
-		return fmt.Errorf("error listing tags for (%s): %w", d.Id(), err)
+		return fmt.Errorf("listing tags for (%s): %w", d.Id(), err)
 	}
 
 	if err := d.Set("tags", tags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map()); err != nil {
-		return fmt.Errorf("error setting tags: %w", err)
+		return fmt.Errorf("setting tags: %w", err)
 	}
 
 	return nil
