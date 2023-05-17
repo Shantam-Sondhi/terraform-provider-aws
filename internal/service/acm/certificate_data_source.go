@@ -80,6 +80,11 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 	tags, tagsOk := d.GetOk("tags")
 	input := &acm.ListCertificatesInput{}
 
+	//
+	if !tagsOk && !domainOk {
+		return diag.Errorf("no ACM Certificate matching search criteria. Please use at least domain or tags as search criteria")
+	}
+
 	if v, ok := d.GetOk("key_types"); ok && v.(*schema.Set).Len() > 0 {
 		input.Includes = &types.Filters{
 			KeyTypes: flex.ExpandStringyValueSet[types.KeyAlgorithm](v.(*schema.Set)),
@@ -124,6 +129,8 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 
 	var matchedCertificate *types.CertificateDetail
 
+	var matchedTagsCertificateTypes []*types.CertificateDetail
+
 	for _, arn := range arns {
 		input := &acm.DescribeCertificateInput{
 			CertificateArn: aws.String(arn),
@@ -144,9 +151,14 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 			certificateTagsIgnoreAWS := certificateTags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map()
 
 			if len(certificateTagsIgnoreAWS) > 0 {
-				if tagsMatch(tags.(map[string]string), certificateTagsIgnoreAWS) {
+				if tagsMatch(tags.(map[string]interface{}), certificateTagsIgnoreAWS) {
 					if matchedCertificate == nil {
 						matchedCertificate = certificate
+
+						// If there is no filtering by certificate types, proceed to next certificate.
+						if len(certificateTypes) == 0 {
+							continue
+						}
 					}
 
 					// At this point, we already have a candidate certificate.
@@ -157,17 +169,26 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 						if err != nil {
 							return diag.FromErr(err)
 						}
+
+						// If there is no filtering by certificate types, proceed to next certificate.
+						if len(certificateTypes) == 0 {
+							continue
+						}
 					}
 
-					// If there is no filtering by certificate types, multiple certificates having same tags
+					// If there is no filtering by certificate types, multiple certificates having same tags.
 					if len(certificateTypes) == 0 {
 						// Now we have multiple candidate certificates and we only allow one certificate.
-						return diag.Errorf("multiple ACM Certificates matching input criteria")
+						return diag.Errorf("multiple ACM Certificates matching search criteria")
 					}
+				}
+
+				if !tagsMatch(tags.(map[string]interface{}), certificateTagsIgnoreAWS) {
+					continue
 				}
 			}
 
-			// If there is no filtering by certificate types, proceed to next certificate
+			// If there is need to further filtering by certificate types.
 			if len(certificateTypes) == 0 {
 				continue
 			}
@@ -175,21 +196,21 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 
 		if len(certificateTypes) > 0 {
 			for _, certificateType := range certificateTypes {
-				// If there is matched certificated by tags, setting matched certificate to nil
-				// we are ensuring that matched certificate should also have matched certificate type.
+				// If there is candidate filtered by tags, by setting matched certificate to nil
+				// we are ensuring that candidate needs to also match certificate type.
 				if tagsOk && matchedCertificate != nil {
 					matchedCertificate = nil
-				}
-
-				// If there is no matching by tags skip current certificate from further filtering.
-				if tagsOk && matchedCertificate == nil {
-					continue
 				}
 
 				if certificate.Type == certificateType {
 					// We do not have a candidate certificate.
 					if matchedCertificate == nil {
 						matchedCertificate = certificate
+
+						// If there is a candidate, store it for later checks if multiple candidates.
+						if tagsOk && !filterMostRecent {
+							matchedTagsCertificateTypes = append(matchedTagsCertificateTypes, certificate)
+						}
 
 						break
 					}
@@ -206,7 +227,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 						break
 					}
 					// Now we have multiple candidate certificates and we only allow one certificate.
-					return diag.Errorf("multiple ACM Certificates matching input criteria")
+					return diag.Errorf("multiple ACM Certificates matching search criteria")
 				}
 			}
 
@@ -233,11 +254,17 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 
 		// Now we have multiple candidate certificates and we only allow one certificate.
-		return diag.Errorf("multiple ACM Certificates matching input criteria")
+		return diag.Errorf("multiple ACM Certificates matching search criteria")
+	}
+
+	// If there are multiple candidates with same tags and certificate types.
+	if len(matchedTagsCertificateTypes) > 1 {
+		// Now we have multiple candidate certificates and we only allow one certificate.
+		return diag.Errorf("multiple ACM Certificates matching search criteria")
 	}
 
 	if matchedCertificate == nil {
-		return diag.Errorf("no ACM Certificate found matching input criteria")
+		return diag.Errorf("no ACM Certificate matching search criteria")
 	}
 
 	// Get the certificate data if the status is issued
@@ -298,13 +325,13 @@ func mostRecentCertificate(i, j *types.CertificateDetail) (*types.CertificateDet
 	return j, nil
 }
 
-func tagsMatch(tagsFilter, tagsCertificate map[string]string) bool {
+func tagsMatch(tagsFilter map[string]interface{}, tagsCertificate map[string]string) bool {
 	if len(tagsFilter) > len(tagsCertificate) {
 		return false
 	}
 
 	for k, v := range tagsFilter {
-		if tagsCertificate[k] != v {
+		if tagsCertificate[k] != v.(string) {
 			return false
 		}
 	}
