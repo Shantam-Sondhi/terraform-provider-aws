@@ -5,6 +5,7 @@ package s3
 
 import (
 	"context"
+	"log"
 
 	aws_sdkv2 "github.com/aws/aws-sdk-go-v2/aws"
 	retry_sdkv2 "github.com/aws/aws-sdk-go-v2/aws/retry"
@@ -25,6 +26,17 @@ func (p *servicePackage) NewConn(ctx context.Context, m map[string]any) (*s3_sdk
 	config := &aws_sdkv1.Config{
 		Endpoint:         aws_sdkv1.String(m["endpoint"].(string)),
 		S3ForcePathStyle: aws_sdkv1.Bool(m["s3_use_path_style"].(bool)),
+	}
+
+	if endpoint := m["endpoint"].(string); endpoint != "" && sess.Config.UseFIPSEndpoint == endpoints_sdkv1.FIPSEndpointStateEnabled {
+		// The SDK doesn't allow setting a custom non-FIPS endpoint *and* enabling UseFIPSEndpoint.
+		// However there are a few cases where this is necessary; some services don't have FIPS endpoints,
+		// and for some services (e.g. CloudFront) the SDK generates the wrong fips endpoint.
+		// While forcing this to disabled may result in the end-user not using a FIPS endpoint as specified
+		// by setting UseFIPSEndpoint=true, the user also explicitly changed the endpoint, so
+		// here we need to assume the user knows what they're doing.
+		log.Printf("[WARN] UseFIPSEndpoint is enabled but a custom endpoint (%s) is configured, ignoring UseFIPSEndpoint.", endpoint)
+		sess.Config.UseFIPSEndpoint = endpoints_sdkv1.FIPSEndpointStateDisabled
 	}
 
 	if v, ok := m["s3_us_east_1_regional_endpoint"]; ok {
@@ -52,6 +64,17 @@ func (p *servicePackage) NewClient(ctx context.Context, config map[string]any) (
 	return s3_sdkv2.NewFromConfig(cfg, func(o *s3_sdkv2.Options) {
 		if endpoint := config["endpoint"].(string); endpoint != "" {
 			o.BaseEndpoint = aws_sdkv2.String(endpoint)
+
+			if o.EndpointOptions.UseFIPSEndpoint == aws_sdkv2.FIPSEndpointStateEnabled {
+				// The SDK doesn't allow setting a custom non-FIPS endpoint *and* enabling UseFIPSEndpoint.
+				// However there are a few cases where this is necessary; some services don't have FIPS endpoints,
+				// and for some services (e.g. CloudFormation) the SDK generates the wrong fips endpoint.
+				// While forcing this to disabled may result in the end-user not using a FIPS endpoint as specified
+				// by setting UseFIPSEndpoint=true, the user also explicitly changed the endpoint, so
+				// here we need to assume the user knows what they're doing.
+				log.Printf("[WARN] UseFIPSEndpoint is enabled but a custom endpoint (%s) is configured, ignoring UseFIPSEndpoint.", endpoint)
+				o.EndpointOptions.UseFIPSEndpoint = aws_sdkv2.FIPSEndpointStateDisabled
+			}
 		} else if o.Region == endpoints_sdkv1.UsEast1RegionID && config["s3_us_east_1_regional_endpoint"].(endpoints_sdkv1.S3UsEast1RegionalEndpoint) != endpoints_sdkv1.RegionalS3UsEast1Endpoint {
 			// Maintain the AWS SDK for Go v1 default of using the global endpoint in us-east-1.
 			// See https://github.com/hashicorp/terraform-provider-aws/issues/33028.
