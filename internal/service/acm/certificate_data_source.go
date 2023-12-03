@@ -147,7 +147,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 		if tagsOk {
 			certificateTags, err := listTags(ctx, conn, aws.ToString(certificate.CertificateArn))
 			if err != nil {
-				return sdkdiag.AppendFromErr(diags, "listing tags for ACM Certificate (%s): %s", aws.ToString(certificate.CertificateArn), err)
+				return sdkdiag.AppendErrorf(diags, "listing tags for ACM Certificate (%s): %s", aws.ToString(certificate.CertificateArn), err)
 			}
 
 			certificateTagsIgnoreAWS := certificateTags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map()
@@ -169,7 +169,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 						matchedCertificate, err = mostRecentCertificate(certificate, matchedCertificate)
 
 						if err != nil {
-							return diag.FromErr(err)
+							return sdkdiag.AppendFromErr(diags, err)
 						}
 
 						// If there is no filtering by certificate types, proceed to next certificate.
@@ -181,7 +181,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 					// If there is no filtering by certificate types, multiple certificates having same tags.
 					if len(certificateTypes) == 0 {
 						// Now we have multiple candidate certificates and we only allow one certificate.
-						return sdkdiag.AppendFromErr(diags, "multiple ACM Certificates matching search criteria")
+						return sdkdiag.AppendErrorf(diags, "multiple ACM Certificates matching search criteria")
 					}
 				}
 
@@ -229,7 +229,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 						break
 					}
 					// Now we have multiple candidate certificates and we only allow one certificate.
-					return sdkdiag.AppendFromErr(diags, "multiple ACM Certificates matching search criteria")
+					return sdkdiag.AppendErrorf(diags, "multiple ACM Certificates matching search criteria")
 				}
 			}
 
@@ -256,17 +256,17 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 
 		// Now we have multiple candidate certificates and we only allow one certificate.
-		return sdkdiag.AppendFromErr(diags, "multiple ACM Certificates matching search criteria")
+		return sdkdiag.AppendErrorf(diags, "multiple ACM Certificates matching search criteria")
 	}
 
 	// If there are multiple candidates with same tags and certificate types.
 	if len(matchedTagsCertificateTypes) > 1 {
 		// Now we have multiple candidate certificates and we only allow one certificate.
-		return sdkdiag.AppendFromErr(diags, "multiple ACM Certificates matching search criteria")
+		return sdkdiag.AppendErrorf(diags, "multiple ACM Certificates matching search criteria")
 	}
 
 	if matchedCertificate == nil {
-		return sdkdiag.AppendFromErr(diags, "no ACM Certificate matching search criteria")
+		return sdkdiag.AppendErrorf(diags, "no ACM Certificate matching search criteria")
 	}
 
 	// Get the certificate data if the status is issued
@@ -303,7 +303,7 @@ func dataSourceCertificateRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if err := d.Set("tags", matchedCertificateTags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map()); err != nil {
-		return sdkdiag.AppendFromErr(diags, "setting tags: %s", err)
+		return sdkdiag.AppendErrorf(diags, "setting tags: %s", err)
 	}
 
 	return diags
