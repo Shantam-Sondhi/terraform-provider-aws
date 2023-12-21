@@ -2529,11 +2529,12 @@ func testAccFunctionConfig_basic(funcName, policyName, roleName, sgName string) 
 		acctest.ConfigLambdaBase(policyName, roleName, sgName),
 		fmt.Sprintf(`
 resource "aws_lambda_function" "test" {
-  filename      = "test-fixtures/lambdatest.zip"
-  function_name = "%s"
-  role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "exports.example"
-  runtime       = "nodejs16.x"
+  filename                  = "test-fixtures/lambdatest.zip"
+  function_name             = "%s"
+  role                      = aws_iam_role.iam_for_lambda.arn
+  handler                   = "exports.example"
+  runtime                   = "nodejs16.x"
+  runtime_version_update_on = "FunctionUpdate"
 }
 `, funcName))
 }
