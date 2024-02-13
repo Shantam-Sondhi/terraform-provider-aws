@@ -150,6 +150,7 @@ const (
 	Neptune                      = "neptune"
 	NetworkFirewall              = "networkfirewall"
 	NetworkManager               = "networkmanager"
+	NetworkMonitor               = "networkmonitor"
 	ObservabilityAccessManager   = "oam"
 	OpenSearch                   = "opensearch"
 	OpenSearchIngestion          = "osis"
