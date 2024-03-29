@@ -28,6 +28,7 @@ const (
 	AccessAnalyzerEndpointID             = "access-analyzer"
 	ACMPCAEndpointID                     = "acm-pca"
 	AMPEndpointID                        = "aps"
+	AppSyncEndpointID                    = "appsync"
 	AthenaEndpointID                     = "athena"
 	AuditManagerEndpointID               = "auditmanager"
 	BatchEndpointID                      = "batch"
