@@ -69,6 +69,7 @@ const (
 	ObservabilityAccessManagerEndpointID = "oam"
 	OpenSearchServerlessEndpointID       = "aoss"
 	OpenSearchIngestionEndpointID        = "osis"
+	PaymentCryptographyEndpointID        = "paymentcryptography"
 	PipesEndpointID                      = "pipes"
 	PollyEndpointID                      = "polly"
 	QLDBEndpointID                       = "qldb"
