@@ -50,6 +50,7 @@ const (
 	CodeArtifactEndpointID               = "codeartifact"
 	CodeGuruReviewerEndpointID           = "codeguru-reviewer"
 	CodeStarConnectionsEndpointID        = "codestar-connections"
+	CognitoIDPEndpointID                 = "cognito-idp"
 	CognitoIdentityEndpointID            = "cognito-identity"
 	ComprehendEndpointID                 = "comprehend"
 	ConfigServiceEndpointID              = "config"
