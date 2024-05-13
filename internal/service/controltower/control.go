@@ -5,16 +5,20 @@ package controltower
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/controltower"
+	"github.com/aws/aws-sdk-go-v2/service/controltower/document"
 	"github.com/aws/aws-sdk-go-v2/service/controltower/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	"github.com/hashicorp/terraform-provider-aws/internal/enum"
 	"github.com/hashicorp/terraform-provider-aws/internal/errs"
@@ -30,6 +34,7 @@ func resourceControl() *schema.Resource {
 	return &schema.Resource{
 		CreateWithoutTimeout: resourceControlCreate,
 		ReadWithoutTimeout:   resourceControlRead,
+		UpdateWithoutTimeout: resourceControlUpdate,
 		DeleteWithoutTimeout: resourceControlDelete,
 
 		Importer: &schema.ResourceImporter{
@@ -38,6 +43,7 @@ func resourceControl() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
 
@@ -54,6 +60,30 @@ func resourceControl() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: verify.ValidARN,
 			},
+			"parameters": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: false,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"value": {
+							Type:                  schema.TypeString,
+							Required:              true,
+							ValidateFunc:          validation.StringIsJSON,
+							DiffSuppressFunc:      verify.SuppressEquivalentJSONDiffs,
+							DiffSuppressOnRefresh: true,
+							StateFunc: func(v interface{}) string {
+								json, _ := structure.NormalizeJsonString(v)
+								return json
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -65,10 +95,27 @@ func resourceControlCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	controlIdentifier := d.Get("control_identifier").(string)
 	targetIdentifier := d.Get("target_identifier").(string)
+	parameters := d.Get("parameters").([]interface{})
+
+	newParams := make([]types.EnabledControlParameter, len(parameters))
+	for i, param := range parameters {
+		param := param.(map[string]interface{})
+		var value interface{}
+		err := json.Unmarshal([]byte(param["value"].(string)), &value)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		newParams[i] = types.EnabledControlParameter{
+			Key:   aws.String(param["key"].(string)),
+			Value: document.NewLazyDocument(value),
+		}
+	}
+
 	id := errs.Must(flex.FlattenResourceId([]string{targetIdentifier, controlIdentifier}, controlResourceIDPartCount, false))
 	input := &controltower.EnableControlInput{
 		ControlIdentifier: aws.String(controlIdentifier),
 		TargetIdentifier:  aws.String(targetIdentifier),
+		Parameters:        newParams,
 	}
 
 	output, err := conn.EnableControl(ctx, input)
@@ -113,6 +160,58 @@ func resourceControlRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("target_identifier", targetIdentifier)
 
 	return diags
+}
+
+func resourceControlUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	conn := meta.(*conns.AWSClient).ControlTowerClient(ctx)
+
+	controlIdentifier := d.Get("control_identifier").(string)
+	targetIdentifier := d.Get("target_identifier").(string)
+	parameters := d.Get("parameters").([]interface{})
+
+	newParams := make([]types.EnabledControlParameter, len(parameters))
+	for i, param := range parameters {
+		param := param.(map[string]interface{})
+		var value interface{}
+		err := json.Unmarshal([]byte(param["value"].(string)), &value)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		newParams[i] = types.EnabledControlParameter{
+			Key:   aws.String(param["key"].(string)),
+			Value: document.NewLazyDocument(value),
+		}
+	}
+
+	controlOutput, err := findEnabledControlByTwoPartKey(ctx, conn, targetIdentifier, controlIdentifier)
+
+	if !d.IsNewResource() && tfresource.NotFound(err) {
+		log.Printf("[WARN] ControlTower Control %s not found, removing from state", d.Id())
+		d.SetId("")
+		return diags
+	}
+
+	id := errs.Must(flex.FlattenResourceId([]string{targetIdentifier, controlIdentifier}, controlResourceIDPartCount, false))
+	input := &controltower.UpdateEnabledControlInput{
+		EnabledControlIdentifier: controlOutput.Arn,
+		Parameters:               newParams,
+	}
+
+	output, err := conn.UpdateEnabledControl(ctx, input)
+
+	if err != nil {
+		return sdkdiag.AppendErrorf(diags, "updating ControlTower Control (%s): %s", id, err)
+	}
+
+	d.SetId(id)
+
+	if _, err := waitOperationSucceeded(ctx, conn, aws.ToString(output.OperationIdentifier), d.Timeout(schema.TimeoutUpdate)); err != nil {
+		return sdkdiag.AppendErrorf(diags, "waiting for ControlTower Control (%s) updating: %s", d.Id(), err)
+	}
+
+	return append(diags, resourceControlRead(ctx, d, meta)...)
 }
 
 func resourceControlDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
