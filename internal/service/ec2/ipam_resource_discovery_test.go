@@ -24,15 +24,15 @@ func TestAccIPAMResourceDiscovery_serial(t *testing.T) {
 
 	testCases := map[string]map[string]func(t *testing.T){
 		"ResourceDiscovery": {
-			"basic":        testAccIPAMResourceDiscovery_basic,
-			"modify":       testAccIPAMResourceDiscovery_modify,
-			"disappears":   testAccIPAMResourceDiscovery_disappears,
-			names.AttrTags: testAccIPAMResourceDiscovery_tags,
+			"basic":      testAccIPAMResourceDiscovery_basic,
+			"modify":     testAccIPAMResourceDiscovery_modify,
+			"disappears": testAccIPAMResourceDiscovery_disappears,
+			"tags":       testAccIPAMResourceDiscovery_tags,
 		},
 		"ResourceDiscoveryAssociation": {
-			"basic":        testAccIPAMResourceDiscoveryAssociation_basic,
-			"disappears":   testAccIPAMResourceDiscoveryAssociation_disappears,
-			names.AttrTags: testAccIPAMResourceDiscoveryAssociation_tags,
+			"basic":      testAccIPAMResourceDiscoveryAssociation_basic,
+			"disappears": testAccIPAMResourceDiscoveryAssociation_disappears,
+			"tags":       testAccIPAMResourceDiscoveryAssociation_tags,
 		},
 	}
 

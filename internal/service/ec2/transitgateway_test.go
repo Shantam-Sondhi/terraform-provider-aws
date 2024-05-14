@@ -30,9 +30,9 @@ func TestAccTransitGateway_serial(t *testing.T) {
 	semaphore := tfsync.GetSemaphore("TransitGateway", "AWS_EC2_TRANSIT_GATEWAY_LIMIT", 5)
 	testCases := map[string]map[string]func(*testing.T, tfsync.Semaphore){
 		"Connect": {
-			"basic":        testAccTransitGatewayConnect_basic,
-			"disappears":   testAccTransitGatewayConnect_disappears,
-			names.AttrTags: testAccTransitGatewayConnect_tags,
+			"basic":      testAccTransitGatewayConnect_basic,
+			"disappears": testAccTransitGatewayConnect_disappears,
+			"tags":       testAccTransitGatewayConnect_tags,
 			"TransitGatewayDefaultRouteTableAssociation":                       testAccTransitGatewayConnect_TransitGatewayDefaultRouteTableAssociation,
 			"TransitGatewayDefaultRouteTableAssociationAndPropagationDisabled": testAccTransitGatewayConnect_TransitGatewayDefaultRouteTableAssociationAndPropagationDisabled,
 			"TransitGatewayDefaultRouteTablePropagation":                       testAccTransitGatewayConnect_TransitGatewayDefaultRouteTablePropagation,
@@ -40,7 +40,7 @@ func TestAccTransitGateway_serial(t *testing.T) {
 		"ConnectPeer": {
 			"basic":                 testAccTransitGatewayConnectPeer_basic,
 			"disappears":            testAccTransitGatewayConnectPeer_disappears,
-			names.AttrTags:          testAccTransitGatewayConnectPeer_tags,
+			"tags":                  testAccTransitGatewayConnectPeer_tags,
 			"BgpAsn":                testAccTransitGatewayConnectPeer_bgpASN,
 			"InsideCidrBlocks":      testAccTransitGatewayConnectPeer_insideCIDRBlocks,
 			"TransitGatewayAddress": testAccTransitGatewayConnectPeer_TransitGatewayAddress,
@@ -48,7 +48,7 @@ func TestAccTransitGateway_serial(t *testing.T) {
 		"Gateway": {
 			"basic":                       testAccTransitGateway_basic,
 			"disappears":                  testAccTransitGateway_disappears,
-			names.AttrTags:                testAccTransitGateway_tags,
+			"tags":                        testAccTransitGateway_tags,
 			"AmazonSideASN":               testAccTransitGateway_AmazonSideASN,
 			"AutoAcceptSharedAttachments": testAccTransitGateway_AutoAcceptSharedAttachments,
 			"CidrBlocks":                  testAccTransitGateway_cidrBlocks,
@@ -62,7 +62,7 @@ func TestAccTransitGateway_serial(t *testing.T) {
 		"MulticastDomain": {
 			"basic":         testAccTransitGatewayMulticastDomain_basic,
 			"disappears":    testAccTransitGatewayMulticastDomain_disappears,
-			names.AttrTags:  testAccTransitGatewayMulticastDomain_tags,
+			"tags":          testAccTransitGatewayMulticastDomain_tags,
 			"IGMPv2Support": testAccTransitGatewayMulticastDomain_igmpv2Support,
 		},
 		"MulticastDomainAssociation": {
@@ -85,19 +85,19 @@ func TestAccTransitGateway_serial(t *testing.T) {
 		"PeeringAttachment": {
 			"basic":            testAccTransitGatewayPeeringAttachment_basic,
 			"disappears":       testAccTransitGatewayPeeringAttachment_disappears,
-			names.AttrTags:     testAccTransitGatewayPeeringAttachment_tags,
+			"tags":             testAccTransitGatewayPeeringAttachment_tags,
 			"DifferentAccount": testAccTransitGatewayPeeringAttachment_differentAccount,
 		},
 		"PeeringAttachmentAccepter": {
 			"basic":            testAccTransitGatewayPeeringAttachmentAccepter_basic,
-			names.AttrTags:     testAccTransitGatewayPeeringAttachmentAccepter_tags,
+			"tags":             testAccTransitGatewayPeeringAttachmentAccepter_tags,
 			"DifferentAccount": testAccTransitGatewayPeeringAttachmentAccepter_differentAccount,
 		},
 		"PolicyTable": {
 			"basic":                    testAccTransitGatewayPolicyTable_basic,
 			"disappears":               testAccTransitGatewayPolicyTable_disappears,
 			"disappearsTransitGateway": testAccTransitGatewayPolicyTable_disappears_TransitGateway,
-			names.AttrTags:             testAccTransitGatewayPolicyTable_tags,
+			"tags":                     testAccTransitGatewayPolicyTable_tags,
 		},
 		"PolicyTableAssociation": {
 			"basic":      testAccTransitGatewayPolicyTableAssociation_basic,
@@ -120,7 +120,7 @@ func TestAccTransitGateway_serial(t *testing.T) {
 			"basic":                    testAccTransitGatewayRouteTable_basic,
 			"disappears":               testAccTransitGatewayRouteTable_disappears,
 			"disappearsTransitGateway": testAccTransitGatewayRouteTable_disappears_TransitGateway,
-			names.AttrTags:             testAccTransitGatewayRouteTable_tags,
+			"tags":                     testAccTransitGatewayRouteTable_tags,
 		},
 		"RouteTableAssociation": {
 			"basic":                      testAccTransitGatewayRouteTableAssociation_basic,
@@ -134,7 +134,7 @@ func TestAccTransitGateway_serial(t *testing.T) {
 		"VpcAttachment": {
 			"basic":                testAccTransitGatewayVPCAttachment_basic,
 			"disappears":           testAccTransitGatewayVPCAttachment_disappears,
-			names.AttrTags:         testAccTransitGatewayVPCAttachment_tags,
+			"tags":                 testAccTransitGatewayVPCAttachment_tags,
 			"ApplianceModeSupport": testAccTransitGatewayVPCAttachment_ApplianceModeSupport,
 			"DnsSupport":           testAccTransitGatewayVPCAttachment_DNSSupport,
 			"Ipv6Support":          testAccTransitGatewayVPCAttachment_IPv6Support,
@@ -145,8 +145,8 @@ func TestAccTransitGateway_serial(t *testing.T) {
 			"TransitGatewayDefaultRouteTablePropagation":                       testAccTransitGatewayVPCAttachment_TransitGatewayDefaultRouteTablePropagation,
 		},
 		"VpcAttachmentAccepter": {
-			"basic":        testAccTransitGatewayVPCAttachmentAccepter_basic,
-			names.AttrTags: testAccTransitGatewayVPCAttachmentAccepter_tags,
+			"basic": testAccTransitGatewayVPCAttachmentAccepter_basic,
+			"tags":  testAccTransitGatewayVPCAttachmentAccepter_tags,
 			"TransitGatewayDefaultRouteTableAssociationAndPropagation": testAccTransitGatewayVPCAttachmentAccepter_TransitGatewayDefaultRouteTableAssociationAndPropagation,
 		},
 	}

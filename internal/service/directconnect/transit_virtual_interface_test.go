@@ -24,9 +24,9 @@ func TestAccDirectConnectTransitVirtualInterface_serial(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]func(t *testing.T){
-		"basic":        testAccTransitVirtualInterface_basic,
-		names.AttrTags: testAccTransitVirtualInterface_tags,
-		"sitelink":     testAccTransitVirtualInterface_siteLink,
+		"basic":    testAccTransitVirtualInterface_basic,
+		"tags":     testAccTransitVirtualInterface_tags,
+		"sitelink": testAccTransitVirtualInterface_siteLink,
 	}
 
 	acctest.RunSerialTests1Level(t, testCases, 0)

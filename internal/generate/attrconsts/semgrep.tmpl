@@ -9,6 +9,7 @@ rules:
         - "internal/service/**/*.go"
     patterns:
       - pattern: '"{{ .ConstantLower }}"'
+      - pattern-not-regex: '"{{ .ConstantLower }}":\s+test\w+,'
     severity: ERROR
     fix: "names.Attr{{ .Constant }}"
-{{- end }}
+{{ end -}}

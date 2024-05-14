@@ -29,10 +29,10 @@ func TestAccChimeSDKVoiceVoiceProfileDomain_serial(t *testing.T) {
 
 	testCases := map[string]map[string]func(t *testing.T){
 		"VoiceProfileDomain": {
-			"basic":        testAccVoiceProfileDomain_basic,
-			"disappears":   testAccVoiceProfileDomain_disappears,
-			"update":       testAccVoiceProfileDomain_update,
-			names.AttrTags: testAccVoiceProfileDomain_tags,
+			"basic":      testAccVoiceProfileDomain_basic,
+			"disappears": testAccVoiceProfileDomain_disappears,
+			"update":     testAccVoiceProfileDomain_update,
+			"tags":       testAccVoiceProfileDomain_tags,
 		},
 	}
 

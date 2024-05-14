@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/names"
 )
 
-func testResponsePlan_basic(t *testing.T) {
+func testAccResponsePlan_basic(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -69,7 +69,7 @@ func testResponsePlan_basic(t *testing.T) {
 	})
 }
 
-func testResponsePlan_updateRequiredFields(t *testing.T) {
+func testAccResponsePlan_updateRequiredFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -148,7 +148,7 @@ func testResponsePlan_updateRequiredFields(t *testing.T) {
 	})
 }
 
-func testResponsePlan_updateTags(t *testing.T) {
+func testAccResponsePlan_updateTags(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -247,7 +247,7 @@ func testResponsePlan_updateTags(t *testing.T) {
 	})
 }
 
-func testResponsePlan_updateEmptyTags(t *testing.T) {
+func testAccResponsePlan_updateEmptyTags(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -317,7 +317,7 @@ func testResponsePlan_updateEmptyTags(t *testing.T) {
 	})
 }
 
-func testResponsePlan_disappears(t *testing.T) {
+func testAccResponsePlan_disappears(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -349,7 +349,7 @@ func testResponsePlan_disappears(t *testing.T) {
 	})
 }
 
-func testResponsePlan_incidentTemplateOptionalFields(t *testing.T) {
+func testAccResponsePlan_incidentTemplateOptionalFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -422,7 +422,7 @@ func testResponsePlan_incidentTemplateOptionalFields(t *testing.T) {
 	})
 }
 
-func testResponsePlan_displayName(t *testing.T) {
+func testAccResponsePlan_displayName(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -473,7 +473,7 @@ func testResponsePlan_displayName(t *testing.T) {
 	})
 }
 
-func testResponsePlan_chatChannel(t *testing.T) {
+func testAccResponsePlan_chatChannel(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -554,7 +554,7 @@ func testResponsePlan_chatChannel(t *testing.T) {
 	})
 }
 
-func testResponsePlan_engagement(t *testing.T) {
+func testAccResponsePlan_engagement(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}
@@ -639,7 +639,7 @@ func testResponsePlan_engagement(t *testing.T) {
 	})
 }
 
-func testResponsePlan_action(t *testing.T) {
+func testAccResponsePlan_action(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping long-running test in short mode")
 	}

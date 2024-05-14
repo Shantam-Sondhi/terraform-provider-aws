@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	tfguardduty "github.com/hashicorp/terraform-provider-aws/internal/service/guardduty"
 	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
-	"github.com/hashicorp/terraform-provider-aws/names"
 )
 
 func TestAccGuardDuty_serial(t *testing.T) {
@@ -25,7 +24,7 @@ func TestAccGuardDuty_serial(t *testing.T) {
 			"datasources_kubernetes_audit_logs": testAccDetector_datasources_kubernetes_audit_logs,
 			"datasources_malware_protection":    testAccDetector_datasources_malware_protection,
 			"datasources_all":                   testAccDetector_datasources_all,
-			names.AttrTags:                      testAccDetector_tags,
+			"tags":                              testAccDetector_tags,
 			"datasource_basic":                  testAccDetectorDataSource_basic,
 			"datasource_id":                     testAccDetectorDataSource_ID,
 		},
@@ -35,10 +34,10 @@ func TestAccGuardDuty_serial(t *testing.T) {
 			"multiple":                 testAccDetectorFeature_multiple,
 		},
 		"Filter": {
-			"basic":        testAccFilter_basic,
-			"update":       testAccFilter_update,
-			names.AttrTags: testAccFilter_tags,
-			"disappears":   testAccFilter_disappears,
+			"basic":      testAccFilter_basic,
+			"update":     testAccFilter_update,
+			"tags":       testAccFilter_tags,
+			"disappears": testAccFilter_disappears,
 		},
 		"FindingIDs": {
 			"datasource_basic": testAccFindingIDsDataSource_basic,
@@ -47,8 +46,8 @@ func TestAccGuardDuty_serial(t *testing.T) {
 			"basic": testAccInviteAccepter_basic,
 		},
 		"IPSet": {
-			"basic":        testAccIPSet_basic,
-			names.AttrTags: testAccIPSet_tags,
+			"basic": testAccIPSet_basic,
+			"tags":  testAccIPSet_tags,
 		},
 		"OrganizationAdminAccount": {
 			"basic": testAccOrganizationAdminAccount_basic,
@@ -66,8 +65,8 @@ func TestAccGuardDuty_serial(t *testing.T) {
 			"multiple":                 testAccOrganizationConfigurationFeature_multiple,
 		},
 		"ThreatIntelSet": {
-			"basic":        testAccThreatIntelSet_basic,
-			names.AttrTags: testAccThreatIntelSet_tags,
+			"basic": testAccThreatIntelSet_basic,
+			"tags":  testAccThreatIntelSet_tags,
 		},
 		"Member": {
 			"basic":              testAccMember_basic,

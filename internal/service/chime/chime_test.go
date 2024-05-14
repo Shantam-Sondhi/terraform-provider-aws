@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-provider-aws/internal/acctest"
-	"github.com/hashicorp/terraform-provider-aws/names"
 )
 
 func TestAccChime_serial(t *testing.T) {
@@ -15,10 +14,10 @@ func TestAccChime_serial(t *testing.T) {
 
 	testCases := map[string]map[string]func(t *testing.T){
 		"VoiceConnector": {
-			"basic":        testAccVoiceConnector_basic,
-			"disappears":   testAccVoiceConnector_disappears,
-			"update":       testAccVoiceConnector_update,
-			names.AttrTags: testAccVoiceConnector_tags,
+			"basic":      testAccVoiceConnector_basic,
+			"disappears": testAccVoiceConnector_disappears,
+			"update":     testAccVoiceConnector_update,
+			"tags":       testAccVoiceConnector_tags,
 		},
 		"VoiceConnectorGroup": {
 			"basic":      testAccVoiceConnectorGroup_basic,
