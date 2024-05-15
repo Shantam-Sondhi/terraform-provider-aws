@@ -518,6 +518,69 @@ func ResourceService() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"volume_configuration": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"managed_ebs_volume": {
+							Type:     schema.TypeList,
+							Required: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"role_arn": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: verify.ValidARN,
+									},
+									"encrypted": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"file_system_type": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Default:      ecs.TaskFilesystemTypeXfs,
+										ValidateFunc: validation.StringInSlice(ecs.TaskFilesystemType_Values(), false),
+									},
+									"iops": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
+									"kms_key_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"size_in_gb": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
+									"snapshot_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"throughput": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 1000),
+									},
+									"volume_type": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 
 		CustomizeDiff: customdiff.Sequence(
@@ -623,6 +686,10 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if v, ok := d.GetOk("service_connect_configuration"); ok && len(v.([]interface{})) > 0 {
 		input.ServiceConnectConfiguration = expandServiceConnectConfiguration(v.([]interface{}))
+	}
+
+	if v, ok := d.GetOk("volume_configuration"); ok && len(v.([]interface{})) > 0 {
+		input.VolumeConfigurations = expandVolumeConfigurations(v.([]interface{}))
 	}
 
 	serviceRegistries := d.Get("service_registries").([]interface{})
@@ -954,6 +1021,10 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 		if d.HasChange("service_connect_configuration") {
 			input.ServiceConnectConfiguration = expandServiceConnectConfiguration(d.Get("service_connect_configuration").([]interface{}))
+		}
+
+		if d.HasChange("volume_configuration") {
+			input.VolumeConfigurations = expandVolumeConfigurations(d.Get("volume_configuration").([]interface{}))
 		}
 
 		if d.HasChange("service_registries") {
@@ -1464,6 +1535,67 @@ func expandSecretOptions(sop []interface{}) []*ecs.Secret {
 	}
 
 	return out
+}
+
+func expandVolumeConfigurations(vc []interface{}) []*ecs.ServiceVolumeConfiguration {
+	if len(vc) == 0 {
+		return nil
+	}
+
+	vcs := make([]*ecs.ServiceVolumeConfiguration, 0)
+
+	for _, raw := range vc {
+		p := raw.(map[string]interface{})
+
+		config := &ecs.ServiceVolumeConfiguration{
+			Name: aws.String(p["name"].(string)),
+		}
+
+		if v, ok := p["managed_ebs_volume"].([]interface{}); ok && len(v) > 0 {
+			config.ManagedEBSVolume = expandManagedEBSVolume(v)
+		}
+		vcs = append(vcs, config)
+	}
+
+	return vcs
+}
+
+func expandManagedEBSVolume(ebs []interface{}) *ecs.ServiceManagedEBSVolumeConfiguration {
+	if len(ebs) == 0 {
+		return &ecs.ServiceManagedEBSVolumeConfiguration{}
+	}
+	raw := ebs[0].(map[string]interface{})
+
+	config := &ecs.ServiceManagedEBSVolumeConfiguration{}
+	if v, ok := raw["role_arn"].(string); ok && v != "" {
+		config.RoleArn = aws.String(v)
+	}
+	if v, ok := raw["encrypted"].(bool); ok {
+		config.Encrypted = aws.Bool(v)
+	}
+	if v, ok := raw["file_system_type"].(string); ok && v != "" {
+		config.FilesystemType = aws.String(v)
+	}
+	if v, ok := raw["iops"].(int); ok && v != 0 {
+		config.Iops = aws.Int64(int64(v))
+	}
+	if v, ok := raw["kms_key_id"].(string); ok && v != "" {
+		config.KmsKeyId = aws.String(v)
+	}
+	if v, ok := raw["size_in_gb"].(int); ok && v != 0 {
+		config.SizeInGiB = aws.Int64(int64(v))
+	}
+	if v, ok := raw["snapshot_id"].(string); ok && v != "" {
+		config.SnapshotId = aws.String(v)
+	}
+	if v, ok := raw["throughput"].(int); ok && v != 0 {
+		config.Throughput = aws.Int64(int64(v))
+	}
+	if v, ok := raw["volume_type"].(string); ok && v != "" {
+		config.VolumeType = aws.String(v)
+	}
+
+	return config
 }
 
 func expandServices(srv []interface{}) []*ecs.ServiceConnectService {
